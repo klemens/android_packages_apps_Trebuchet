@@ -172,6 +172,8 @@ public class Launcher extends Activity
     public static final int REQUEST_PROTECT_FOLDER = 15;
     public static final int REQUEST_UNPROTECT_FOLDER = 16;
 
+    public static final int REQUEST_PICK_ICON = 17;
+
     private static final int WORKSPACE_BACKGROUND_GRADIENT = 0;
     private static final int WORKSPACE_BACKGROUND_TRANSPARENT = 1;
     private static final int WORKSPACE_BACKGROUND_BLACK = 2;
@@ -1694,6 +1696,17 @@ public class Launcher extends Activity
             }
         });
         wallpaperButton.setOnTouchListener(getHapticFeedbackTouchListener());
+
+        View iconPackButton = findViewById(R.id.icon_pack_button);
+        iconPackButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (!mWorkspace.isSwitchingState()) {
+                    IconPackHelper.pickIconPack(Launcher.this, false);
+                }
+            }
+        });
+        iconPackButton.setOnTouchListener(getHapticFeedbackTouchListener());
 
         View settingsButton = findViewById(R.id.settings_button);
         if (hasSettings()) {
