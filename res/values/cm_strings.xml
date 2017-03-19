@@ -84,4 +84,10 @@
     <string name="storage_permission_denied">Can\'t access storage</string>
     <string name="export_db_email_subject">Launcher DB for region</string>
     <string name="export_db_could_not">Could not export DB file</string>
+
+    <!-- Icon packs -->
+    <string name="dialog_pick_iconpack_title">Pick icon pack</string>
+    <string name="default_iconpack_title">Default icons</string>
+    <string name="icon_packs_title">Icon packs</string>
+    <string name="no_iconpacks_summary">No icon packs installed</string>
 </resources>

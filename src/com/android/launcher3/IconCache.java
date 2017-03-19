@@ -47,6 +47,7 @@ import com.android.launcher3.compat.LauncherAppsCompat;
 import com.android.launcher3.compat.UserHandleCompat;
 import com.android.launcher3.compat.UserManagerCompat;
 import com.android.launcher3.model.PackageItemInfo;
+import com.android.launcher3.settings.SettingsProvider;
 import com.android.launcher3.util.ComponentKey;
 import com.android.launcher3.util.Thunk;
 
@@ -99,6 +100,8 @@ public class IconCache {
 
     @Thunk final Handler mWorkerHandler;
 
+    private IconPackHelper mIconPackHelper;
+
     // The background color used for activity icons. Since these icons are displayed in all-apps
     // and folders, this would be same as the light quantum panel background. This color
     // is used to convert icons to RGB_565.
@@ -130,6 +133,9 @@ public class IconCache {
         // automatically be loaded as ALPHA_8888.
         mLowResOptions.inPreferredConfig = Bitmap.Config.RGB_565;
         updateSystemStateString();
+
+        mIconPackHelper = new IconPackHelper(context);
+        loadIconPack();
     }
 
     private Drawable getFullResDefaultActivityIcon() {
@@ -171,7 +177,14 @@ public class IconCache {
             resources = null;
         }
         if (resources != null) {
-            int iconId = info.getIconResource();
+            int iconId = 0;
+            if (mIconPackHelper != null && mIconPackHelper.isIconPackLoaded()) {
+                iconId = mIconPackHelper.getResourceIdForActivityIcon(info);
+                if (iconId != 0) {
+                    return getFullResIcon(mIconPackHelper.getIconPackResources(), iconId);
+                }
+            }
+            iconId = info.getIconResource();
             if (iconId != 0) {
                 return getFullResIcon(resources, iconId);
             }
@@ -193,6 +206,16 @@ public class IconCache {
         return b;
     }
 
+    private void loadIconPack() {
+        mIconPackHelper.unloadIconPack();
+        String iconPack = SettingsProvider.getStringCustomDefault(mContext,
+                SettingsProvider.SETTINGS_UI_GENERAL_ICONS_ICON_PACK, "");
+        if (!TextUtils.isEmpty(iconPack) && !mIconPackHelper.loadIconPack(iconPack)) {
+            SettingsProvider.putString(mContext,
+                    SettingsProvider.SETTINGS_UI_GENERAL_ICONS_ICON_PACK, "");
+        }
+    }
+
     /**
      * Remove any records for the supplied ComponentName.
      */
@@ -209,6 +232,7 @@ public class IconCache {
             mIconDb.close();
         }
         mIconDb = new IconDB(mContext);
+        loadIconPack();
     }
 
     /**

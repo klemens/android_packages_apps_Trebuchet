@@ -106,6 +106,20 @@
                         android:textSize="12sp" />
 
                     <TextView
+                        android:id="@+id/icon_pack_button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawablePadding="4dp"
+                        android:drawableTop="@drawable/ic_iconpacks"
+                        android:fontFamily="sans-serif-condensed"
+                        android:gravity="center_horizontal"
+                        android:text="@string/icon_packs_title"
+                        android:textAllCaps="true"
+                        android:textColor="@color/widget_button_text_color"
+                        android:textSize="12sp" />
+
+                    <TextView
                         android:id="@+id/settings_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
