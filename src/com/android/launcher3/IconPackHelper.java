@@ -299,15 +299,15 @@ public class IconPackHelper {
             builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int position) {
                     if (adapter.isOriginalIconPack(position)) {
-                        ((Launcher) context).getWorkspace().exitOverviewMode(true);
+                        ((Launcher) context).showWorkspace(false);
                         return;
                     }
                     String selectedPackage = adapter.getItem(position);
                     SettingsProvider.putString(context,
                             SettingsProvider.SETTINGS_UI_GENERAL_ICONS_ICON_PACK, selectedPackage);
-                    LauncherAppState.getInstance().getIconCache().flush();
+                    LauncherAppState.getInstance().getIconCache().clear();
                     LauncherAppState.getInstance().getModel().forceReload();
-                    ((Launcher) context).getWorkspace().exitOverviewMode(true);
+                    ((Launcher) context).showWorkspace(false);
                 }
             });
         } else {
@@ -344,17 +344,30 @@ public class IconPackHelper {
         return mLoadedIconPackResource;
     }
 
-    public int getResourceIdForActivityIcon(ActivityInfo info) {
-        String drawable = mIconPackResources.get(info.packageName.toLowerCase()
-                + "." + info.name.toLowerCase());
+    public int getResourceIdForPackageIcon(String packageName) {
+        String drawable = mIconPackResources.get(packageName.toLowerCase());
         if (drawable == null) {
-            // Icon pack doesn't have an icon for the activity, fallback to package icon
-            drawable = mIconPackResources.get(info.packageName.toLowerCase());
-            if (drawable == null) {
-                return 0;
-            }
+            return 0;
         }
         return getResourceIdForDrawable(drawable);
+    }
+
+    public int getResourceIdForActivityIcon(String packageName, String name) {
+        String drawable = mIconPackResources.get(packageName.toLowerCase()
+                + "." + name.toLowerCase());
+        if (drawable == null) {
+            // Icon pack doesn't have an icon for the activity, fallback to package icon
+            return getResourceIdForPackageIcon(packageName);
+        }
+        return getResourceIdForDrawable(drawable);
+    }
+
+    public int getResourceIdForActivityIcon(ComponentName info) {
+        return getResourceIdForActivityIcon(info.getPackageName(), info.getClassName());
+    }
+
+    public int getResourceIdForActivityIcon(ActivityInfo info) {
+        return getResourceIdForActivityIcon(info.packageName, info.name);
     }
 
     static class IconPackInfo {
