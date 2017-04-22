@@ -138,6 +138,32 @@ public class IconCache {
         loadIconPack();
     }
 
+    private Bitmap getIconFromIconPack(ComponentName name) {
+        if (mIconPackHelper != null && mIconPackHelper.isIconPackLoaded()) {
+            int iconId = mIconPackHelper.getResourceIdForActivityIcon(name);
+            if (iconId != 0) {
+                return Utilities.createIconBitmap(
+                    getFullResIcon(mIconPackHelper.getIconPackResources(), iconId),
+                    mContext);
+            }
+        }
+
+        return null;
+    }
+
+    private Bitmap getIconFromIconPack(String packageName) {
+        if (mIconPackHelper != null && mIconPackHelper.isIconPackLoaded()) {
+            int iconId = mIconPackHelper.getResourceIdForPackageIcon(packageName);
+            if (iconId != 0) {
+                return Utilities.createIconBitmap(
+                    getFullResIcon(mIconPackHelper.getIconPackResources(), iconId),
+                    mContext);
+            }
+        }
+
+        return null;
+    }
+
     private Drawable getFullResDefaultActivityIcon() {
         return getFullResIcon(Resources.getSystem(), android.R.mipmap.sym_def_app_icon);
     }
@@ -233,6 +259,16 @@ public class IconCache {
         }
         mIconDb = new IconDB(mContext);
         loadIconPack();
+    }
+
+    /**
+     * Clears the memory and database cache, so all icons are regenerated
+     */
+    public void clear() {
+        // Delete the database cache
+        mContext.deleteDatabase(LauncherFiles.APP_ICONS_DB);
+        // Clear the memory cache and reload the database
+        flush();
     }
 
     /**
@@ -436,7 +472,10 @@ public class IconCache {
         }
         if (entry == null) {
             entry = new CacheEntry();
-            entry.icon = Utilities.createIconBitmap(app.getBadgedIcon(mIconDpi), mContext);
+            entry.icon = getIconFromIconPack(app.getComponentName());
+            if (entry.icon == null) {
+                entry.icon = Utilities.createIconBitmap(app.getBadgedIcon(mIconDpi), mContext);
+            }
         }
         entry.title = app.getLabel();
         entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, app.getUser());
@@ -598,7 +637,10 @@ public class IconCache {
             // Check the DB first.
             if (!getEntryFromDB(cacheKey, entry, useLowResIcon)) {
                 if (info != null) {
-                    entry.icon = Utilities.createIconBitmap(info.getBadgedIcon(mIconDpi), mContext);
+                    entry.icon = getIconFromIconPack(info.getComponentName());
+                    if(entry.icon == null) {
+                        entry.icon = Utilities.createIconBitmap(info.getBadgedIcon(mIconDpi), mContext);
+                    }
                 } else {
                     if (usePackageIcon) {
                         CacheEntry packageEntry = getEntryForPackageLocked(
@@ -679,9 +721,12 @@ public class IconCache {
                     if (appInfo == null) {
                         throw new NameNotFoundException("ApplicationInfo is null");
                     }
-                    Drawable drawable = mUserManager.getBadgedDrawableForUser(
-                            appInfo.loadIcon(mPackageManager), user);
-                    entry.icon = Utilities.createIconBitmap(drawable, mContext);
+                    entry.icon = getIconFromIconPack(packageName);
+                    if(entry.icon == null) {
+                        Drawable drawable = mUserManager.getBadgedDrawableForUser(
+                                appInfo.loadIcon(mPackageManager), user);
+                        entry.icon = Utilities.createIconBitmap(drawable, mContext);
+                    }
                     entry.title = appInfo.loadLabel(mPackageManager);
                     entry.contentDescription = mUserManager.getBadgedLabelForUser(entry.title, user);
                     entry.isLowResIcon = false;
