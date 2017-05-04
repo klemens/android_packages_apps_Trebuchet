@@ -326,7 +326,7 @@ public class IconPackHelper {
                 }
             });
         }
-        builder.show().getWindow().getDecorView().setAlpha(0.8f);
+        builder.show();
     }
 
     boolean isIconPackLoaded() {
